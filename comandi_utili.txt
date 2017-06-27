@@ -1,0 +1,27 @@
+installa il plugin che si occupa di aggiornare automaticamente le guest addition di vbox
+vagrant plugin install vagrant-vbguest 
+
+scarica spark 
+https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz
+mostra dati in hdfs 
+hadoop fs -ls -R / | grep "^d"
+file dentro specifica cartella
+hadoop fs -ls -R nome cartella 
+lancia container in modalità interattiva
+docker run -dit --name=sparkContainer spark 
+
+lanciare job java
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence" --master local --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar  /progetto.jar hdfs://localhost:9000/input/2015.csv hdfs://localhost:9000/output
+ 
+
+crea immagine con nome
+docker build --tag=spark Spark_Docker/
+
+lanciare spark con connettore mongodb
+
+./spark-shell --packages org.mongodb.spark:mongo-spark-connector_2.10:2.0.0 --conf "spark.mongodb.input.uri=mongodb://172.17.0.2/dbTerr.attacks" --conf "spark.mongodb.output.uri=mongodb://172.17.0.2/dbTerr.attacks" 
+
+una volta nella shell importare questi comandi
+import com.mongodb.spark._
+import com.mongodb.spark.rdd.MongoRDD
+import org.bson.Document
