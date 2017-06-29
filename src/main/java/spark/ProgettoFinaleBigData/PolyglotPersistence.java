@@ -52,12 +52,14 @@ public class PolyglotPersistence implements Serializable {
 		//attacchi terroristici in mongo
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		//indicatori di sviluppo delle nazioni nell'hdfs
-		//JavaRDD<String> dataFromLake = p.loadDataFromDataLake(p.getPathToFile(), jsc);
+		JavaRDD<String> dataFromLake = p.loadDataFromDataLake(p.getPathToFile(), jsc);
 
-		//System.out.println(dataFromMongo.take(1));
-		//System.out.println(dataFromLake.take(2));
 		JavaPairRDD<Integer,Iterable<String>> mostAttackedCountry = p.mostAttackedCountries(dataFromMongo);
+		JavaPairRDD<Integer,Iterable<Integer>> attacksPerYear = p.attacksperYear(dataFromMongo);
+		JavaPairRDD<Integer,Iterable<String>> claimedAttacks = p.claimedAttacks(dataFromMongo);
 		System.out.println(mostAttackedCountry.take(2));
+		System.out.println(attacksPerYear.take(2));
+		System.out.println(claimedAttacks.take(2));
 	}
 
 	public  JavaRDD<String> loadDataFromDataLake(String path,JavaSparkContext jsc) {
@@ -76,4 +78,30 @@ public class PolyglotPersistence implements Serializable {
 		
 		return result;
 	}
+	
+	public JavaPairRDD<Integer,Iterable<Integer>> attacksperYear(JavaMongoRDD<Document> input) {
+		JavaPairRDD<Integer,Integer> yearOne = input.mapToPair(line -> {
+			Integer year =  (Integer) line.get("iyear");
+			return new Tuple2<Integer,Integer>(year,1);	
+		});
+		JavaPairRDD<Integer,Iterable<Integer>> result = yearOne.aggregateByKey(0, (a,b) -> a+b,(a,b) -> a+b)
+				.mapToPair(a ->new Tuple2<Integer,Integer>(a._2,a._1)).groupByKey().sortByKey(false);
+		
+		return result;
+	}
+	
+	public JavaPairRDD<Integer,Iterable<String>> claimedAttacks(JavaMongoRDD<Document> input) {
+		JavaPairRDD<String,Integer> claimedAttacks = input.mapToPair(line -> {
+			String claimed = (String) line.get("gname");
+			if (claimed!= null && !claimed.isEmpty() && !claimed.equals("Unknown"))
+				return new Tuple2<String,Integer>(claimed,1);
+			else return new Tuple2<String,Integer>("",0);
+		});
+		JavaPairRDD<Integer,Iterable<String>> result = claimedAttacks.aggregateByKey(0, (a,b) -> a+b,(a,b) -> a+b)
+				.mapToPair(a ->new Tuple2<Integer,String>(a._2,a._1)).groupByKey().sortByKey(false);
+		
+		return result;
+	}
+	
+	
 }
