@@ -1,1 +1,3 @@
-/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/AttacksPerYear.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/MostAttackedCountries.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/ClaimedAttacks.java
