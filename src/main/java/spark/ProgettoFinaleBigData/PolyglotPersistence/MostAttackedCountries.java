@@ -1,19 +1,14 @@
 package spark.ProgettoFinaleBigData.PolyglotPersistence;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.SparkSession;
 import org.bson.Document;
-
-import com.mongodb.Function;
 import com.mongodb.spark.MongoSpark;
 import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 import scala.Serializable;
@@ -51,8 +46,6 @@ public class MostAttackedCountries implements Serializable {
 
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
-		//JavaRDD<String> dataFromLake = p.loadDataFromDataLake(p.getPathToFile(), jsc);
-
 		JavaPairRDD<Integer,Iterable<String>> mostAttackedCountries = p.mostAttackedCountries(dataFromMongo);
 		System.out.println(mostAttackedCountries.take(10));
 		JavaRDD<Document> mongoOutput = p.mapToMongo(mostAttackedCountries);
@@ -60,11 +53,7 @@ public class MostAttackedCountries implements Serializable {
 		MongoSpark.save(mongoOutput);
 	}
 
-	//	public  JavaRDD<String> loadDataFromDataLake(String path,JavaSparkContext jsc) {
-	//		JavaRDD<String> fileLines = jsc.textFile(this.pathToFile);
-	//		JavaRDD<String> lines = fileLines.flatMap(line -> Arrays.asList(line.split("\n")).iterator());
-	//		return lines;		
-	//	}
+	
 
 	public JavaPairRDD<Integer,Iterable<String>> mostAttackedCountries(JavaMongoRDD<Document> input) {
 		JavaPairRDD<String,Integer> countryOne = input.mapToPair(line -> {
