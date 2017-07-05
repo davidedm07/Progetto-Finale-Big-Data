@@ -15,13 +15,13 @@ import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 
 import scala.Tuple2;
 
-public class AttacksEducation implements Serializable {
+public class AttacksDefenseExpenditure implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private String pathToFile;
-	private String educationCode = "NY.ADJ.AEDU.CD";
+	private String defenseCode = "MS.MIL.XPND.GD.ZS";
 
-	public AttacksEducation(String path) {
+	public AttacksDefenseExpenditure(String path) {
 		this.setPathToFile(path);
 	}
 
@@ -31,7 +31,7 @@ public class AttacksEducation implements Serializable {
 			System.exit(1);
 		}
 
-		AttacksEducation att = new AttacksEducation(args[0]);
+		AttacksDefenseExpenditure att = new AttacksDefenseExpenditure(args[0]);
 		SparkSession spark = SparkSession.builder()			     
 				.appName("AttacksEducation")
 				.config("spark.mongodb.input.uri","mongodb://172.17.0.2:27017/dbTerr.attacks")
@@ -41,10 +41,8 @@ public class AttacksEducation implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		JavaRDD<String> dataFromLake = att.loadDataFromDataLake(att.getPathToFile(), jsc);
-		//System.out.println(dataFromLake.take(5).toString());
-		//System.out.println(dataFromMongo.take(5).toString());
 		JavaPairRDD<String,Tuple2<String,String>> join = att.join(dataFromMongo, dataFromLake);
-		System.out.println(join.take(10));
+		System.out.println(join.take(1));
 	}
 
 	public  JavaRDD<String> loadDataFromDataLake(String path,JavaSparkContext jsc) {
@@ -56,11 +54,10 @@ public class AttacksEducation implements Serializable {
 
 	public JavaPairRDD<String,Tuple2<String,String>> join (JavaRDD<Document> dataFromMongo,JavaRDD<String> dataFromLake) {
 		JavaPairRDD<String,String> temp1 = dataFromLake
-				.mapToPair(line -> new Tuple2<String,String>(line.split(",")[0],line));
+				.filter(line-> line.contains(defenseCode))
+				.mapToPair(line -> new Tuple2<String,String>(line.split(",")[0].replaceAll("\"",""),line));
 		JavaPairRDD<String,String> temp2 = dataFromMongo
-				.mapToPair(doc -> new Tuple2<String,String>(doc.get("country_txt").toString(),doc.values().toString()));
-		//System.out.println(temp1.take(5));
-		System.out.println(temp2.take(5));
+				.mapToPair(doc -> new Tuple2<String,String>((String)doc.get("country_txt"),doc.values().toString()));
 		JavaPairRDD<String,Tuple2<String,String>> join = temp1.join(temp2);
 		return join;
 	}

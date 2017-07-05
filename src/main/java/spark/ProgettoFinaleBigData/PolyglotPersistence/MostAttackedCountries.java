@@ -47,9 +47,10 @@ public class MostAttackedCountries implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		JavaPairRDD<Integer,Iterable<String>> mostAttackedCountries = p.mostAttackedCountries(dataFromMongo);
-		System.out.println(mostAttackedCountries.take(10));
+		//System.out.println(mostAttackedCountries.take(10));
+		System.out.println(p.mostAttackedCountry(dataFromMongo).take(5));
 		JavaRDD<Document> mongoOutput = p.mapToMongo(mostAttackedCountries);
-		System.out.println(mongoOutput.take(5));
+		//System.out.println(mongoOutput.take(5));
 		MongoSpark.save(mongoOutput);
 	}
 
@@ -65,6 +66,18 @@ public class MostAttackedCountries implements Serializable {
 
 		return result;
 	}
+	
+	public JavaPairRDD<Integer,String> mostAttackedCountry(JavaMongoRDD<Document> input) {
+		JavaPairRDD<String,Integer> countryOne = input.mapToPair(line -> {
+			String country = (String) line.get("country_txt");
+			return new Tuple2<String,Integer>(country,1);	
+		});
+		JavaPairRDD<Integer,String> result = countryOne.aggregateByKey(0, (a,b) -> a+b,(a,b) -> a+b)
+				.mapToPair(a ->new Tuple2<Integer,String>(a._2,a._1)).sortByKey(false);
+
+		return result;
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public JavaRDD<Document> mapToMongo(JavaPairRDD<Integer,Iterable<String>> input) {
