@@ -34,6 +34,8 @@ public class AttacksPerYear implements Serializable{
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		JavaPairRDD<Integer,Iterable<Integer>> attacksperYear = p.attacksperYear(dataFromMongo);
 		MongoSpark.save(p.mapToMongo(attacksperYear));
+		
+	
 	}
 	
 	public JavaPairRDD<Integer,Iterable<Integer>> attacksperYear(JavaMongoRDD<Document> input) {
