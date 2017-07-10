@@ -35,7 +35,7 @@ public class AttacksDefenseExpenditure implements Serializable {
 
 		AttacksDefenseExpenditure att = new AttacksDefenseExpenditure(args[0]);
 		SparkSession spark = SparkSession.builder()			     
-				.appName("AttacksEducation")
+				.appName("AttacksDefenseExpenditure")
 				.config("spark.mongodb.input.uri","mongodb://172.17.0.2:27017/dbTerr.attacks")
 				.config("spark.mongodb.output.uri","mongodb://172.17.0.2:27017/dbTerr.attacksDefenseExpenditure")
 				.getOrCreate();
@@ -65,7 +65,10 @@ public class AttacksDefenseExpenditure implements Serializable {
 				.mapToPair(input -> 
 				new Tuple2<Tuple2<String,String>,String>(
 						new Tuple2<String,String>(input._1,input._2._1),input._2._2));
+		
 		return join.groupByKey();
+		
+		
 	}
 
 	public JavaPairRDD<Integer,Tuple2<String,Double>> 
