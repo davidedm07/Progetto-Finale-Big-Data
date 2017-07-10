@@ -4,4 +4,4 @@
 .DS_Store
 mongodb-org-3.4.repo
 
-target
+target/
