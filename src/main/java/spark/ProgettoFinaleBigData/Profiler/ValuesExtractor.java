@@ -19,9 +19,11 @@ public class ValuesExtractor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private String pathToFile;
+	private String separator;
 
-	public ValuesExtractor(String path) {
+	public ValuesExtractor(String path, String separator) {
 		this.pathToFile = path;
+		this.setSeparator(separator);
 	}
 
 	public String getPathToFile() {
@@ -31,6 +33,15 @@ public class ValuesExtractor implements Serializable {
 	public void setPathToFile(String pathToFile) {
 		this.pathToFile = pathToFile;
 	}
+	
+	public String getSeparator() {
+		return separator;
+	}
+
+	public void setSeparator(String separator) {
+		this.separator = separator;
+	}
+	
 	public SparkSession getSparkSession() {
 		return SparkSession.builder()
 			.appName("ValuesExtractor")
@@ -38,9 +49,7 @@ public class ValuesExtractor implements Serializable {
 			.config("spark.mongodb.output.uri","mongodb://172.17.0.2:27017/")
 			.getOrCreate();
 	}
-	public Map<Integer, Long> getLikelyPrincipalColumnIndexes(SparkSession spark, ValuesExtractor v, String[] args) {
-		
-		Dataset<Row> df = v.parseCsv(spark, v.pathToFile);
+	public Map<Integer, Long> getLikelyPrincipalColumnIndexes(Dataset<Row> df) {
 		
 		String[] columnsList = df.columns();
 		//Long totalRows = df.count();
@@ -54,17 +63,17 @@ public class ValuesExtractor implements Serializable {
 			Dataset<Row> column = df.select(datasetColumn).groupBy(datasetColumn).count();
 			Dataset<Row> columnNullRow = column.filter(line -> {
 				try {
-					if (String.valueOf((String)line.getAs(0)).equals(nullRow.getAs(0))) {
+					if (String.valueOf((String)line.getAs(0)).equals(nullRow.getAs(0)) || String.valueOf((String)line.getAs(0)).equals("0")) {
 						return true;}
 					else {
 						return false;
 					}
 				}
 				catch (ClassCastException e ) {};
-				return false;
+				return true;
 			});
 			Long columnNum = column.count();
-			if (columnNullRow.count() == 1) {
+			if (columnNullRow.count() > 1 || columnNum < 5) {
 				likelyPrincipalColumns.add(false);
 			}
 			else {
@@ -78,9 +87,10 @@ public class ValuesExtractor implements Serializable {
 		
 	}
 	
-	public Dataset<Row> parseCsv (SparkSession spark, String path) {
+	public Dataset<Row> parseCsv (SparkSession spark, String path, String separator) {
 		return spark.read()
 		    .format("com.databricks.spark.csv")
+		    .option("delimiter", separator)
 		    .option("inferSchema", "true")
 		    .option("header", "true")
 		    .load("hdfs://localhost:9000/input/" + path);
@@ -90,10 +100,10 @@ public class ValuesExtractor implements Serializable {
 		int k;
 		int principalColumnIndex = 0;
 		Long min = new Long(Long.MAX_VALUE);
-		for (k = 0; k < likelyPrincipalColumnsRows.size(); k++) {
-			if (likelyPrincipalColumnsRows.get(k) < min) {
-				principalColumnIndex = k;
-				min = likelyPrincipalColumnsRows.get(k);
+		for (Integer key : likelyPrincipalColumnsRows.keySet()) {
+			if (likelyPrincipalColumnsRows.get(key) < min) {
+				principalColumnIndex = key;
+				min = likelyPrincipalColumnsRows.get(key);
 		}
 	}
 		return principalColumnIndex;
@@ -108,21 +118,31 @@ public class ValuesExtractor implements Serializable {
 			}
 	}
 	
+	public DatasetMetadata buildDatasetMetadata(Map<Integer, Long> likelyPrincipalColumns, int mostLikelyPrincipalColumn) {
+		return new DatasetMetadata(likelyPrincipalColumns, mostLikelyPrincipalColumn);
+	}
+	
 	public static void main(String[] args) {
-		
-		if (args.length < 1) {
-			System.err.println("File path not found!");
+		if (args.length < 2) {
+			System.err.println("File path or separator not found!");
 			System.exit(1);
 		}
 		
-		/* il seguente codice mostra un utilizzo della classe
-		ValuesExtractor v = new ValuesExtractor(args[0]);
+		/* il seguente codice mostra un utilizzo della classe*/
+		ValuesExtractor v = new ValuesExtractor(args[0], args[1]);
 		SparkSession spark = v.getSparkSession();
-		Map<Integer, Long> likelyPrincipalColumnsRows = v.getLikelyPrincipalColumnIndexes(spark, v, args);
-		int indice = v.choosePrincipalColumn(likelyPrincipalColumnsRows);
-		System.out.println("La colonna principale ha indice: " + String.valueOf(indice));
-		System.out.println(String.valueOf(likelyPrincipalColumnsRows.get(indice)) + " valori diversi.");
-		*/
+		Dataset<Row> df = v.parseCsv(spark, v.pathToFile, v.getSeparator());
+		Map<Integer, Long> likelyPrincipalColumnsRows = v.getLikelyPrincipalColumnIndexes(df);
+		System.out.println("Possibili colonne");
+		for (Integer key : likelyPrincipalColumnsRows.keySet()) {
+		    System.out.println(key + " " + likelyPrincipalColumnsRows.get(key));
+		}
+		int mostLikelyPrincipalColumn = v.choosePrincipalColumn(likelyPrincipalColumnsRows);
+		System.out.println("La colonna principale ha indice: " + String.valueOf(mostLikelyPrincipalColumn));
+		System.out.println(String.valueOf(likelyPrincipalColumnsRows.get(mostLikelyPrincipalColumn)) + " valori diversi.");
+
 	}
+
+
 
 }
