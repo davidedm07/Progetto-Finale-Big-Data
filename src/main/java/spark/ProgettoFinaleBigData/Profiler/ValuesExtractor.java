@@ -8,12 +8,18 @@ import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
+import org.bson.Document;
+
+import com.mongodb.spark.MongoSpark;
+
 import scala.Serializable;
+import scala.Tuple2;
 
 public class ValuesExtractor implements Serializable {
 
@@ -120,6 +126,23 @@ public class ValuesExtractor implements Serializable {
 	
 	public DatasetMetadata buildDatasetMetadata(Map<Integer, Long> likelyPrincipalColumns, int mostLikelyPrincipalColumn) {
 		return new DatasetMetadata(likelyPrincipalColumns, mostLikelyPrincipalColumn);
+	}
+	
+	public void saveToMongo(DatasetMetadata data, JavaSparkContext jsc) {
+		List<Document> docs = new ArrayList<>();
+		Map<Integer,Long> map = data.getLikelyPrincipalColumns();
+		for(int k : map.keySet()) {
+			Document doc = new Document();
+			doc.append("Column Number", k);
+			doc.append("Different Values", map.get(k));
+			docs.add(doc);
+		}
+		Document keyColumn = new Document();
+		keyColumn.append("Key Column", data.getMostLikelyPrincipalColumn());
+		docs.add(keyColumn);
+		JavaRDD<Document> docsRDD =  jsc.parallelize(docs);
+		MongoSpark.save(docsRDD);
+		
 	}
 	
 	public static void main(String[] args) {
