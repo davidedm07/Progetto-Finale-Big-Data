@@ -48,13 +48,14 @@ public class ValuesExtractor implements Serializable {
 		this.separator = separator;
 	}
 	
-	public SparkSession getSparkSession(String nomeDataset) {
+	public SparkSession getSparkSession(String datasetName) {
 		return SparkSession.builder()
 			.appName("ValuesExtractor")
 			.config("spark.mongodb.input.uri","mongodb://172.17.0.2:27017/")
-			.config("spark.mongodb.output.uri","mongodb://172.17.0.2:27017/metadata." + nomeDataset)
+			.config("spark.mongodb.output.uri","mongodb://172.17.0.2:27017/metadata." + datasetName)
 			.getOrCreate();
 	}
+	
 	public Map<Integer, Long> getLikelyPrincipalColumnIndexes(Dataset<Row> df) {
 		
 		String[] columnsList = df.columns();
@@ -151,24 +152,18 @@ public class ValuesExtractor implements Serializable {
 			System.exit(1);
 		}
 		
-		/* il seguente codice mostra un utilizzo della classe*/
 		ValuesExtractor v = new ValuesExtractor(args[0], args[1]);
 		String mongoPath = args[0].substring(0, args[0].length() - 4);
 		SparkSession spark = v.getSparkSession(mongoPath);
 		Dataset<Row> df = v.parseCsv(spark, v.pathToFile, v.getSeparator());
 		Map<Integer, Long> likelyPrincipalColumnsRows = v.getLikelyPrincipalColumnIndexes(df);
-		System.out.println("Possibili colonne");
 		for (Integer key : likelyPrincipalColumnsRows.keySet()) {
 		    System.out.println(key + " " + likelyPrincipalColumnsRows.get(key));
 		}
 		int mostLikelyPrincipalColumn = v.choosePrincipalColumn(likelyPrincipalColumnsRows);
-		System.out.println("La colonna principale ha indice: " + String.valueOf(mostLikelyPrincipalColumn));
-		System.out.println(String.valueOf(likelyPrincipalColumnsRows.get(mostLikelyPrincipalColumn)) + " valori diversi.");
-		System.out.println("Saving into Mongo");
 		DatasetMetadata metadataToSave = v.buildDatasetMetadata(likelyPrincipalColumnsRows, mostLikelyPrincipalColumn);
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		v.saveToMongo(metadataToSave, jsc);
-		System.out.println("Saved into Mongo");
 
 	}
 	
