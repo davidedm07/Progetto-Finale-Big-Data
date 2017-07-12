@@ -2,6 +2,7 @@ package spark.ProgettoFinaleBigData.PolyglotPersistence;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.SparkSession;
 import org.bson.Document;
 
@@ -83,6 +85,30 @@ public class AttacksDefenseExpenditure implements Serializable {
 				new Tuple2<Integer,Tuple2<String,Double>>(input._2._1,new Tuple2<String,Double>(input._1,getAverage(input._2._2))))
 				.sortByKey(false);
 		return result;
+	}
+	
+	/**
+	 * It needs a JavaSpark context configured for mongoDB 
+	 * @param result
+	 */
+	@SuppressWarnings("unchecked")
+	public void saveToMongo(JavaPairRDD<Integer,Tuple2<String,Double>> result) {
+		@SuppressWarnings("rawtypes")
+		FlatMapFunction mapToDocument = new FlatMapFunction<Tuple2<Integer,Tuple2<String,Double>>,Document>(){
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Iterator<Document> call(Tuple2<Integer,Tuple2<String,Double>> t) throws Exception {
+				Document doc = new Document();
+				doc.append("NumOfAttacks", t._1);
+				doc.append("Country", t._2._1.toString());
+				doc.append("Average expenditure for Defense",t._2._2.toString());
+				List<Document> docs = new ArrayList<Document>();
+				docs.add(doc);
+				return docs.iterator();
+			}		
+		};
+		MongoSpark.save(result.flatMap(mapToDocument));
 	}
 
 	public String getPathToFile() {

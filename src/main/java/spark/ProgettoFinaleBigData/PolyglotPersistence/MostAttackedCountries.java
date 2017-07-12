@@ -47,10 +47,9 @@ public class MostAttackedCountries implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		JavaPairRDD<Integer,Iterable<String>> mostAttackedCountries = p.mostAttackedCountries(dataFromMongo);
-		//System.out.println(mostAttackedCountries.take(10));
+		System.out.println("First 5 lines of the result :");
 		System.out.println(p.mostAttackedCountry(dataFromMongo).take(5));
 		JavaRDD<Document> mongoOutput = p.mapToMongo(mostAttackedCountries);
-		//System.out.println(mongoOutput.take(5));
 		MongoSpark.save(mongoOutput);
 	}
 
