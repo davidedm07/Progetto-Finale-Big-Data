@@ -9,7 +9,13 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.spark.MongoSpark;
 import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 
@@ -77,14 +83,31 @@ public class ParametricJoin implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
+		//inserisci il path del file nell'hdfs
+		// io uso hdfs://localhost:9000/input/WDIData.csv con 
+		// input una cartella che ho creato io nell'hdfs
 		pj.setPathToFile(args[0]);
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
 		pj.setDataFromMongo(dataFromMongo);
+		// qua calcoli la colonna principale col tuo metodo, non lo posso testare perchè
+		// non ho i metadati
 		pj.setKeyColumn(0);
 		JavaPairRDD<String,Tuple2<String,String>> join = pj.join();
 		System.out.println(join.take(5));
 
+	}
+	
+	public String getCsvPrincipalColumn(String metadataToLoad) {
+		String columnToSearch = "Key Column";
+		MongoClient mongo = new MongoClient( "172.17.0.2" , 27017 );
+		MongoDatabase db = mongo.getDatabase("metadata");
+		MongoCollection<Document> metadataTable = db.getCollection(metadataToLoad);
+		Bson query = new BasicDBObject(columnToSearch, new BasicDBObject("$exists", true));
+		FindIterable<Document> result = metadataTable.find(query);
+		String principalColumnIndex = result.iterator().next().get(columnToSearch).toString();
+		mongo.close();
+		return principalColumnIndex;
 	}
 	
 	public  JavaRDD<String> loadDataFromDataLake(String path,JavaSparkContext jsc) {
