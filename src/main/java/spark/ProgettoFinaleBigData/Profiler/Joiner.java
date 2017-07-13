@@ -3,6 +3,7 @@ package spark.ProgettoFinaleBigData.Profiler;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -79,28 +80,27 @@ public class Joiner implements Serializable {
 			System.exit(1);
 		}
 		
-		Joiner joiner = new Joiner(args[0], args[1]);
+		Joiner joiner = new Joiner(args[0], "hdfs://localhost:9000/input/WDIData.csv");
 
-		SparkSession spark = joiner.getSparkSession(args[0]);
-		JavaSparkContext jscTerr = new JavaSparkContext(spark.sparkContext());
-		JavaMongoRDD<Document> dbTerr = MongoSpark.load(jscTerr);
-		//System.out.println(dbTerr.first().toString());
-		spark.stop();
+		SparkSession spark = SparkSession.builder()			     
+				.appName("Joiner")
+				.config("spark.mongodb.input.uri","mongodb://172.17.0.2:27017/dbTerr.attacks")
+				.config("spark.mongodb.output.uri","mongodb://172.17.0.2:27017/dbTerr.Joiner")
+				.getOrCreate();
 		
-		String columnIndex = joiner.getCsvPrincipalColumn(args[1]);
-	    System.out.println(columnIndex);
+		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
+		//String columnIndex = joiner.getCsvPrincipalColumn(args[1]);
+	    //System.out.println(columnIndex);
 		
-		/* 
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
-		pj.setPathToFile(args[0]);
+		pj.setPathToFile("hdfs://localhost:9000/input/WDIData.csv");
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
 		pj.setDataFromMongo(dataFromMongo);
 		pj.setKeyColumn(0);
 		JavaPairRDD<String,Tuple2<String,String>> join = pj.join();
 		System.out.println(join.take(5));
-		*/
 	}
 	
 }

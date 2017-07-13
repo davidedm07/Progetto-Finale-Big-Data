@@ -3,3 +3,6 @@
 /home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/MostAttackedCountries.java
 /home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/ClaimedAttacks.java
 /home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/PolyglotPersistence/ParametricJoin.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/Profiler/Joiner.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/Profiler/DatasetMetadata.java
+/home/davide/workspace/ProgettoFinaleBigData/src/main/java/spark/ProgettoFinaleBigData/Profiler/ValuesExtractor.java
