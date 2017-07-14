@@ -44,7 +44,7 @@ public class ParametricJoin implements Serializable {
 		this.keyColumn = column;	
 	}
 
-	public JavaPairRDD<String,Tuple2<String,String>> join() {
+	public JavaPairRDD<String,Tuple2<String,String>> joinWithCommas() {
 		JavaPairRDD<String,String> temp1 = this.dataFromMongo
 				.mapToPair(doc -> new Tuple2<String,String>((String)doc.get("country_txt"),doc.values().toString()));
 
@@ -67,6 +67,21 @@ public class ParametricJoin implements Serializable {
 		return temp1.join(temp2);		
 	}
 
+	
+	public JavaPairRDD<String,Tuple2<String,String>> joinWithSemiColon() {
+		JavaPairRDD<String,String> temp1 = this.dataFromMongo
+				.mapToPair(doc -> new Tuple2<String,String>((String)doc.get("country_txt"),doc.values().toString()));
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		JavaPairRDD<String,String> temp2 = this.dataFromLake
+		.mapToPair(line -> {
+			String[] splitLine = line.split(";");
+			String country = splitLine[this.keyColumn];
+			return new Tuple2(country,line);	
+		});
+		return temp1.join(temp2);		
+	}
+
 	public static void main(String[] args) {
 
 		if (args.length < 2) {
@@ -83,18 +98,15 @@ public class ParametricJoin implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
-		//inserisci il path del file nell'hdfs
-		// io uso hdfs://localhost:9000/input/WDIData.csv con 
-		// input una cartella che ho creato io nell'hdfs
 		pj.setPathToFile(args[0]);
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
 		pj.setDataFromMongo(dataFromMongo);
-		// qua calcoli la colonna principale col tuo metodo, non lo posso testare perchè
-		// non ho i metadati
 		pj.setKeyColumn(0);
-		JavaPairRDD<String,Tuple2<String,String>> join = pj.join();
-		System.out.println(join.take(5));
+		System.out.println("MONGO: " + dataFromMongo.take(5));
+		System.out.println("LAKE: " + dataFromLake.take(5));
+		JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithCommas();
+		System.out.println("JOIN: "+join.take(5));
 
 	}
 	
