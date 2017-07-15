@@ -98,11 +98,12 @@ public class ParametricJoin implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
+		int joinColumnIndex = pj.getCsvPrincipalColumn(args[0]);
 		pj.setPathToFile(args[0]);
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
 		pj.setDataFromMongo(dataFromMongo);
-		pj.setKeyColumn(0);
+		pj.setKeyColumn(joinColumnIndex);
 		System.out.println("MONGO: " + dataFromMongo.take(5));
 		System.out.println("LAKE: " + dataFromLake.take(5));
 		JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithCommas();
@@ -110,7 +111,7 @@ public class ParametricJoin implements Serializable {
 
 	}
 	
-	public String getCsvPrincipalColumn(String metadataToLoad) {
+	public int getCsvPrincipalColumn(String metadataToLoad) {
 		String columnToSearch = "Key Column";
 		MongoClient mongo = new MongoClient( "172.17.0.2" , 27017 );
 		MongoDatabase db = mongo.getDatabase("metadata");
@@ -119,7 +120,7 @@ public class ParametricJoin implements Serializable {
 		FindIterable<Document> result = metadataTable.find(query);
 		String principalColumnIndex = result.iterator().next().get(columnToSearch).toString();
 		mongo.close();
-		return principalColumnIndex;
+		return Integer.parseInt(principalColumnIndex);
 	}
 	
 	public  JavaRDD<String> loadDataFromDataLake(String path,JavaSparkContext jsc) {
