@@ -85,7 +85,7 @@ public class ParametricJoin implements Serializable {
 	public static void main(String[] args) {
 
 		if (args.length < 2) {
-			System.err.println("File path or Output location not found!");
+			System.err.println("File path or delimiter not found!");
 			System.exit(1);
 		}
 
@@ -99,6 +99,7 @@ public class ParametricJoin implements Serializable {
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
 		int joinColumnIndex = pj.getCsvPrincipalColumn(args[0]);
+		String delimiter = args[1];
 		pj.setPathToFile(args[0]);
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
@@ -106,8 +107,18 @@ public class ParametricJoin implements Serializable {
 		pj.setKeyColumn(joinColumnIndex);
 		System.out.println("MONGO: " + dataFromMongo.take(5));
 		System.out.println("LAKE: " + dataFromLake.take(5));
-		JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithCommas();
-		System.out.println("JOIN: "+join.take(5));
+		if (delimiter == ",") {
+			JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithCommas();
+			System.out.println("JOIN: "+ join.take(5));
+		}
+		else if (delimiter == ";") {
+			JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithSemiColon();
+			System.out.println("JOIN: "+ join.take(5));
+		}
+		else {
+			System.err.println("Invalid delimiter!");
+			System.exit(1);
+		}
 
 	}
 	
