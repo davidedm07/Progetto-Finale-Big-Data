@@ -44,7 +44,7 @@ public class ParametricJoin implements Serializable {
 		this.keyColumn = column;	
 	}
 
-	public JavaPairRDD<String,Tuple2<String,String>> joinWithCommas() {
+	private JavaPairRDD<String,Tuple2<String,String>> joinWithCommas() {
 		JavaPairRDD<String,String> temp1 = this.dataFromMongo
 				.mapToPair(doc -> new Tuple2<String,String>((String)doc.get("country_txt"),doc.values().toString()));
 
@@ -68,7 +68,7 @@ public class ParametricJoin implements Serializable {
 	}
 
 	
-	public JavaPairRDD<String,Tuple2<String,String>> joinWithSemiColon() {
+	private JavaPairRDD<String,Tuple2<String,String>> joinWithSemiColon() {
 		JavaPairRDD<String,String> temp1 = this.dataFromMongo
 				.mapToPair(doc -> new Tuple2<String,String>((String)doc.get("country_txt"),doc.values().toString()));
 
@@ -80,6 +80,22 @@ public class ParametricJoin implements Serializable {
 			return new Tuple2(country,line);	
 		});
 		return temp1.join(temp2);		
+	}
+	
+	public JavaPairRDD<String,Tuple2<String,String>> join(String delimiter) {
+		JavaPairRDD<String,Tuple2<String,String>> join = null;
+		if (delimiter == ",") {
+			join = joinWithCommas();
+		}
+		else if (delimiter == ";") {
+			join = joinWithSemiColon();
+		}
+		else {
+			System.err.println("Invalid delimiter!");
+			System.exit(1);
+		}
+		return join;
+		
 	}
 
 	public static void main(String[] args) {
@@ -107,18 +123,9 @@ public class ParametricJoin implements Serializable {
 		pj.setKeyColumn(joinColumnIndex);
 		System.out.println("MONGO: " + dataFromMongo.take(5));
 		System.out.println("LAKE: " + dataFromLake.take(5));
-		if (delimiter == ",") {
-			JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithCommas();
-			System.out.println("JOIN: "+ join.take(5));
-		}
-		else if (delimiter == ";") {
-			JavaPairRDD<String,Tuple2<String,String>> join = pj.joinWithSemiColon();
-			System.out.println("JOIN: "+ join.take(5));
-		}
-		else {
-			System.err.println("Invalid delimiter!");
-			System.exit(1);
-		}
+		JavaPairRDD<String,Tuple2<String,String>> join = pj.join(delimiter);
+		System.out.println("Join: " + join.take(5));
+		
 
 	}
 	
