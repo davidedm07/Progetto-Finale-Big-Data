@@ -24,6 +24,8 @@ echo "Done"
 echo "Copying input files inside the Containers"
 tar -xvzf dbInput/globalterrorismdb_0616dist.tar.gz -C dbInput
 docker cp dbInput/globalterrorismdb_0616dist.csv mongoDB:/globalterrorismdb_0616dist.csv
+tar -xvzf dbInput/WDIData.tar.gz -C dbInput
+docker cp dbInput/WDIData.csv hadoop:/root/WDIData.csv
 echo "Done"
 echo "Copying Jars inside hadoop Container"
 docker cp Jars/mongo-spark-connector_2.10-2.0.0.jar hadoop:/mongo-spark-connector_2.10-2.0.0.jar
