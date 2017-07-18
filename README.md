@@ -27,6 +27,7 @@ Si possono a questo punto avviare le analisi basilari dal container hadoop dopo 
 e aver creato alcune cartelle per organizzare l'HDFS:
 
   hdfs dfs -mkdir /input
+  
   hdfs dfs -mkdir /output
   
 Le analisi possono essere avviate con i comandi (trovandosi nella cartella /usr/local):
