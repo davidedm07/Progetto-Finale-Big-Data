@@ -30,7 +30,7 @@ e aver creato alcune cartelle per organizzare l'HDFS:
   
   hdfs dfs -mkdir /output
   
-Le analisi possono essere avviate con i comandi (trovandosi nella cartella /usr/local):
+Le analisi possono essere avviate con i comandi (trovandosi nella cartella /usr/local/spark-2.1.1-bin-hadoop2.7/bin):
 
 Most Attacked Countries
 
