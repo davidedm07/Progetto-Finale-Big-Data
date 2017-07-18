@@ -7,7 +7,7 @@ docker run -dit --name=mongoDB -p 80:80 -p 27017:27017 mongo
 docker run -dit --name=hadoop -p 8088:8088 -p 8042:8042 -p 50070:50070 -p 8888:8888 -p 4040:4040 izone/hadoop 
 echo "Done"
 echo "Downloading Spark 2.1.1"
-wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz
+wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz --no-check-certificate
 echo "Done"
 echo "Extracting Spark archive"
 tar -xvzf spark-2.1.1-bin-hadoop2.7.tgz
@@ -28,6 +28,8 @@ echo "Done"
 echo "Copying Jars inside hadoop Container"
 docker cp Jars/mongo-spark-connector_2.10-2.0.0.jar hadoop:/mongo-spark-connector_2.10-2.0.0.jar
 docker cp Jars/mongo-java-driver-3.4.2.jar hadoop:/mongo-java-driver-3.4.2.jar
+docker cp Jars/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hadoop:/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar
+docker cp 
 echo "Done"
 echo "Removing the downloaded files"
 rm -rf spark-2.1.1-bin-hadoop2.7.tgz 
