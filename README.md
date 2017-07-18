@@ -26,7 +26,14 @@ Si possono a questo punto avviare le analisi basilari dal container hadoop dopo 
   
 Le analisi possono essere avviate con i comandi:
 
-  //da inserire
+Most Attacked Countries
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.MostAttackedCountries" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output
+
+Attacks Per Year
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.AttacksPerYear" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output/attacksDefenseExpenditure.csv
+
+Claimed Attacks
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.ClaimedAttacks" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output
   
 Entrando nel bash di hadoop ci troveremo nella directory /root. In essa lo script iniziale ha caricato il file WDIData.csv. Una volta caricato questo dataset su HDFS lanciando il comando:
 
@@ -34,7 +41,11 @@ Entrando nel bash di hadoop ci troveremo nella directory /root. In essa lo scrip
   
 potremo avviare anche le analisi poliglotte tra i due sistemi di storage con i seguenti comandi:
 
-  //da inserire
+Attacks Energy
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.AttacksEnergy" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output/attacksEnergy
+
+Attacks Defense Expenditure
+./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.AttacksDefenseExpenditure" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output/attacksDefenseExpenditure
   
 Per quanto riguarda la profilazione, si può lanciare il comando:
 
