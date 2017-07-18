@@ -31,6 +31,7 @@ docker cp Jars/mongo-java-driver-3.4.2.jar hadoop:/mongo-java-driver-3.4.2.jar
 docker cp Jars/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hadoop:/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar
 echo "Done"
 echo "Removing the downloaded files"
+rm -rf dbInput/globalterrorismdb_0616dist.csv
 rm -rf spark-2.1.1-bin-hadoop2.7.tgz 
 rm -rf spark-2.1.1-bin-hadoop2.7
 echo "Done"
