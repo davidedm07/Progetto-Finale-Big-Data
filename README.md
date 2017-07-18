@@ -1,5 +1,7 @@
 # Progetto-Finale-Big-Data
-Progetto Finale del corso di Big Data 2016/2017. 
+
+Corso di Big Data 2016/2017. 
+
 Lo scopo del progetto è quello di creare un sistema poliglotta in grado di eseguire analisi su database di diversa natura.
 Per testare il sistema, basta clonare il progetto ed avviare lo script create_dockers.sh:
 
