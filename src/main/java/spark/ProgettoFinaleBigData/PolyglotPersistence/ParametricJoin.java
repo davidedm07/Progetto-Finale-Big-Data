@@ -1,8 +1,6 @@
 package spark.ProgettoFinaleBigData.PolyglotPersistence;
 
 import java.io.Serializable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -51,17 +49,8 @@ public class ParametricJoin implements Serializable {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		JavaPairRDD<String,String> temp2 = this.dataFromLake
 		.mapToPair(line -> {
-			Pattern p = Pattern.compile("\"[^\"]*\"");
-			Matcher m = p.matcher(line);
-			int cont = 0;
-			String country = "";
-			while(m.find()) {
-				if (cont == this.keyColumn) {
-					country = m.group().replaceAll("\"", "");
-					break;
-				}
-				cont ++;	
-			}
+			String[] splitLine = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+			String country = splitLine[this.keyColumn].replaceAll("\"", "");
 			return new Tuple2(country,line);	
 		});
 		return temp1.join(temp2);		
@@ -84,10 +73,10 @@ public class ParametricJoin implements Serializable {
 	
 	public JavaPairRDD<String,Tuple2<String,String>> join(String delimiter) {
 		JavaPairRDD<String,Tuple2<String,String>> join = null;
-		if (delimiter == ",") {
+		if (delimiter.equals(",")) {
 			join = joinWithCommas();
 		}
-		else if (delimiter == ";") {
+		else if (delimiter.equals(";")) {
 			join = joinWithSemiColon();
 		}
 		else {
@@ -100,8 +89,8 @@ public class ParametricJoin implements Serializable {
 
 	public static void main(String[] args) {
 
-		if (args.length < 2) {
-			System.err.println("File path or delimiter not found!");
+		if (args.length < 3) {
+			System.err.println("File path, metadata Table or delimiter not found!");
 			System.exit(1);
 		}
 
@@ -114,8 +103,8 @@ public class ParametricJoin implements Serializable {
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaMongoRDD<Document> dataFromMongo = MongoSpark.load(jsc);
 		ParametricJoin pj = new ParametricJoin();
-		int joinColumnIndex = pj.getCsvPrincipalColumn(args[0]);
-		String delimiter = args[1];
+		int joinColumnIndex = pj.getCsvPrincipalColumn(args[1]);
+		String delimiter = args[2];
 		pj.setPathToFile(args[0]);
 		JavaRDD<String> dataFromLake = pj.loadDataFromDataLake(pj.getPathToFile(), jsc);
 		pj.setDataFromLake(dataFromLake);
