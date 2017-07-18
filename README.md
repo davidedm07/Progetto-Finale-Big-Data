@@ -24,6 +24,11 @@ Si possono a questo punto avviare le analisi basilari dal container hadoop dopo 
   
   docker exec -it hadoop bash
   
+e aver creato alcune cartelle per organizzare l'HDFS:
+
+  hdfs dfs -mkdir input
+  hdfs dfs -mkdir output
+  
 Le analisi possono essere avviate con i comandi:
 
 Most Attacked Countries
@@ -37,7 +42,8 @@ Attacks Per Year
 Claimed Attacks
 
 ./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.ClaimedAttacks" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output
-  
+
+I riultati verrano salvati su mongoDB.
 Entrando nel bash di hadoop ci troveremo nella directory /root. In essa lo script iniziale ha caricato il file WDIData.csv. Una volta caricato questo dataset su HDFS lanciando il comando:
 
   hdfs dfs -put WDIData.csv /input
@@ -52,6 +58,7 @@ Attacks Defense Expenditure
 
 ./spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.AttacksDefenseExpenditure" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/WDIData.csv hdfs://localhost:9000/output/attacksDefenseExpenditure
   
+I risultati in questo caso verranno salvati su HDFS.
 Per quanto riguarda la profilazione, si può lanciare il comando:
 
 spark-submit --class "spark.ProgettoFinaleBigData.Profiler.ValuesExtractor" --master local[4] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /root/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar nomeCsv.csv delimiter
@@ -66,3 +73,11 @@ Il joiner può essere utilizzato con il seguente comando:
 spark-submit --class "spark.ProgettoFinaleBigData.PolyglotPersistence.ParametricJoin" --master local[1] --jars /mongo-spark-connector_2.10-2.0.0.jar,/mongo-java-driver-3.4.2.jar /root/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hdfs://localhost:9000/input/nomeCsv.csv nomeCsv delimiter
 
 Anche qui nomeCsv del primo parametro è relativo alla directory del file nell'HDFS, va rispecificato il nome per l'estrazione dei metadati da MongoDB e di nuovo il carattere delimitatore utilizzato in precedenza.
+
+Gli altri dataset utilizzati sono reperibili ai seguenti link (vanno scaricati, caricati su HDFS, profilati con ValuesExtractor e quindi joinati con ParametricJoin):
+
+Indicators.csv da https://www.kaggle.com/worldbank/world-development-indicators
+nationals.csv da https://www.kaggle.com/umichigan/world-religions
+world-energy-use-1960-2012.csv da https://datasource.kapsarc.org/explore/dataset/world-energy-use-1960-2012/information/?disjunctive.country&sort=country
+worldbank-gender-statistics.csv da https://datasource.kapsarc.org/explore/dataset/worldbank-gender-statistics/table/
+Data.csv da https://www.kaggle.com/theworldbank/world-gender-statistics (probabile sample di WDIData.csv con formattazione leggermente diversa)
