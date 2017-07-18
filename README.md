@@ -77,7 +77,11 @@ Anche qui nomeCsv del primo parametro è relativo alla directory del file nell'H
 Gli altri dataset utilizzati sono reperibili ai seguenti link (vanno scaricati, caricati su HDFS, profilati con ValuesExtractor e quindi joinati con ParametricJoin):
 
 Indicators.csv da https://www.kaggle.com/worldbank/world-development-indicators
+
 nationals.csv da https://www.kaggle.com/umichigan/world-religions
+
 world-energy-use-1960-2012.csv da https://datasource.kapsarc.org/explore/dataset/world-energy-use-1960-2012/information/?disjunctive.country&sort=country
+
 worldbank-gender-statistics.csv da https://datasource.kapsarc.org/explore/dataset/worldbank-gender-statistics/table/
+
 Data.csv da https://www.kaggle.com/theworldbank/world-gender-statistics (probabile sample di WDIData.csv con formattazione leggermente diversa)
