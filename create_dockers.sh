@@ -22,14 +22,12 @@ echo "Copying the create_database script inside the mongo Container"
 docker cp create_database.sh mongoDB:/create_database.sh
 echo "Done"
 echo "Copying input files inside the Containers" 
-docker cp dbInput/attacchi.csv mongoDB:/attacchi.csv
-docker cp dbInput/2015.csv hadoop:/2015.csv
+docker cp dbInput/globalterrorismdb_0616dist.csv mongoDB:/globalterrorismdb_0616dist.csv
 echo "Done"
 echo "Copying Jars inside hadoop Container"
 docker cp Jars/mongo-spark-connector_2.10-2.0.0.jar hadoop:/mongo-spark-connector_2.10-2.0.0.jar
 docker cp Jars/mongo-java-driver-3.4.2.jar hadoop:/mongo-java-driver-3.4.2.jar
 docker cp Jars/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar hadoop:/ProgettoFinaleBigData-0.0.1-SNAPSHOT.jar
-docker cp 
 echo "Done"
 echo "Removing the downloaded files"
 rm -rf spark-2.1.1-bin-hadoop2.7.tgz 
