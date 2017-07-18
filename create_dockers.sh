@@ -21,7 +21,8 @@ echo "Done"
 echo "Copying the create_database script inside the mongo Container" 
 docker cp create_database.sh mongoDB:/create_database.sh
 echo "Done"
-echo "Copying input files inside the Containers" 
+echo "Copying input files inside the Containers"
+tar -xvzf dbInput/globalterrorismdb_0616dist.tar.gz -C dbInput
 docker cp dbInput/globalterrorismdb_0616dist.csv mongoDB:/globalterrorismdb_0616dist.csv
 echo "Done"
 echo "Copying Jars inside hadoop Container"
